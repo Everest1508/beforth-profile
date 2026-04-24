@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beforth — Company Pitch 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & ROOT ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #0D1117;
+  --deep:   #1C2333;
+  --blue:   #1A5BFF;
+  --blue-d: #0f43d4;
+  --bg:     #EDF0F8;
+  --white:  #FFFFFF;
+  --gray:   #6B7280;
+  --border: #D1D8E8;
+  --pale:   #EBF0FF;
+  --bebas:  'Bebas Neue', sans-serif;
+  --inter:  'Inter', sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--inter);
+}
+
+/* ── DECK SHELL ── */
+#deck {
+  width: 100vw; height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── SLIDES ── */
+.slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; pointer-events: none;
+}
+.slide.active { opacity: 1; pointer-events: all; }
+.slide.enter-right { animation: enterRight .55s cubic-bezier(.22,.68,0,1.2) forwards; }
+.slide.enter-left  { animation: enterLeft  .55s cubic-bezier(.22,.68,0,1.2) forwards; }
+.slide.exit-left   { animation: exitLeft   .45s cubic-bezier(.4,0,.6,1) forwards; pointer-events: none; }
+.slide.exit-right  { animation: exitRight  .45s cubic-bezier(.4,0,.6,1) forwards; pointer-events: none; }
+
+@keyframes enterRight { from { transform: translateX(6%) scale(.97); opacity:0; } to { transform: translateX(0) scale(1); opacity:1; } }
+@keyframes enterLeft  { from { transform: translateX(-6%) scale(.97); opacity:0; } to { transform: translateX(0) scale(1); opacity:1; } }
+@keyframes exitLeft   { from { transform: translateX(0) scale(1); opacity:1; } to { transform: translateX(-4%) scale(.97); opacity:0; } }
+@keyframes exitRight  { from { transform: translateX(0) scale(1); opacity:1; } to { transform: translateX(4%) scale(.97); opacity:0; } }
+
+/* ── SHARED ANIMATIONS ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes pulse-ring { 0%,100% { opacity:.25 } 50% { opacity:.6 } }
+@keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+@keyframes bar-grow { from { width: 0%; } to { width: var(--w); } }
+
+.slide.active .anim-1 { animation: fadeUp .6s .1s both; }
+.slide.active .anim-2 { animation: fadeUp .6s .2s both; }
+.slide.active .anim-3 { animation: fadeUp .6s .3s both; }
+.slide.active .anim-4 { animation: fadeUp .6s .4s both; }
+.slide.active .anim-5 { animation: fadeUp .6s .5s both; }
+.slide.active .anim-6 { animation: fadeUp .6s .6s both; }
+.slide.active .anim-7 { animation: fadeUp .6s .7s both; }
+.slide.active .anim-8 { animation: fadeUp .6s .8s both; }
+
+/* ── DOT GRIDS ── */
+.dot-grid {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(26,91,255,0.15) 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+.dot-grid-light {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(194,206,232,0.65) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* ── SHARED COMPONENTS ── */
+.eyebrow {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 14px;
+}
+.section-title {
+  font-family: var(--bebas);
+  font-size: clamp(40px, 5.2vw, 76px);
+  line-height: .9; color: var(--navy);
+  letter-spacing: .01em; margin-bottom: 16px;
+}
+.section-title .blue { color: var(--blue); }
+.rule { width: 36px; height: 2px; background: var(--blue); margin-bottom: 18px; }
+.body-txt {
+  font-size: clamp(12px, 1.05vw, 14px);
+  font-weight: 300; color: var(--gray); line-height: 1.9;
+}
+.bf-icon { display: block; flex-shrink: 0; }
+.bf-icon svg { width: 100%; height: 100%; display: block; }
+
+/* ── PROGRESS BAR ── */
+#progress {
+  position: fixed; bottom: 0; left: 0;
+  height: 3px; background: var(--blue);
+  transition: width .4s ease; z-index: 1000;
+}
+
+/* ── COUNTER ── */
+#counter {
+  position: fixed; bottom: 22px; right: 36px;
+  font-family: var(--bebas); font-size: 12px;
+  letter-spacing: .18em; color: rgba(13,17,23,.3);
+  z-index: 1000; transition: color .3s;
+}
+
+/* ── NAV ARROWS ── */
+.nav-arrow {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  z-index: 999;
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--border); color: rgba(13,17,23,.5);
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 17px;
+  transition: all .2s; backdrop-filter: blur(8px);
+}
+.nav-arrow:hover { background: var(--blue); border-color: var(--blue); color: #fff; transform: translateY(-50%) scale(1.08); }
+#prevBtn { left: 20px; }
+#nextBtn { right: 20px; }
+
+/* ── SLIDE DOTS ── */
+#slideDots {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 7px; z-index: 1000;
+}
+.sdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(13,17,23,.18); cursor: pointer; transition: all .3s;
+}
+.sdot.on { background: var(--blue); transform: scale(1.4); }
+
+/* ── KEY HINT ── */
+#keyhint {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center;
+  font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(13,17,23,.3); z-index: 999; pointer-events: none;
+  opacity: 1; transition: opacity 1s;
+}
+#keyhint.hidden { opacity: 0; }
+.key-badge {
+  background: rgba(255,255,255,.9); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; font-size: 11px;
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 1 — COVER (Asymmetric Hero)
+══════════════════════════════════════════ */
+.s-cover {
+  background: var(--bg);
+  display: grid; grid-template-columns: 1fr 1fr;
+  height: 100%; position: relative; overflow: visible;
+}
+.cov-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: clamp(48px,6vw,100px) clamp(40px,5vw,80px);
+  position: relative; z-index: 2;
+}
+.cov-brand {
+  display: block;
+  width: fit-content;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp .6s .2s forwards;
+}
+.cov-brand-full {
+  display: block;
+  width: clamp(130px, 13vw, 190px);
+  height: auto;
+}
+.cov-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 22px;
+  opacity: 0; animation: fadeUp .6s .3s forwards;
+}
+.cov-headline {
+  font-family: var(--bebas);
+  font-size: clamp(60px, 8vw, 118px);
+  line-height: .88; letter-spacing: .01em; color: var(--navy);
+  margin-bottom: 28px;
+  opacity: 0; animation: fadeUp .7s .45s forwards;
+}
+.cov-headline .stroke {
+  -webkit-text-stroke: 2.5px var(--navy); color: transparent;
+}
+.cov-sub {
+  font-size: clamp(12px, 1.05vw, 14px); font-weight: 300;
+  color: var(--gray); line-height: 1.9; max-width: 360px;
+  margin-bottom: 32px;
+  opacity: 0; animation: fadeUp .7s .6s forwards;
+}
+.cov-pills {
+  display: flex; flex-wrap: wrap; gap: 9px;
+  opacity: 0; animation: fadeUp .7s .75s forwards;
+}
+.pill {
+  padding: 7px 18px; border-radius: 100px;
+  font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+}
+.pill-b { background: var(--blue); color: #fff; }
+.pill-o { border: 1.5px solid var(--border); color: var(--navy); }
+.cov-tagline {
+  position: absolute; bottom: clamp(24px,3vw,48px); left: clamp(40px,5vw,80px);
+  font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(13,17,23,.28);
+  opacity: 0; animation: fadeUp .6s .9s forwards;
+}
+
+/* Cover right: abstract dashboard mockup */
+.cov-right {
+  display: flex; align-items: stretch; justify-content: center;
+  position: relative; z-index: 2;
+  overflow: visible;
+  padding: 30px 14px 14px;
+}
+.dashboard-mock {
+  width: 100%; max-width: none; height: 100%;
+  display: flex; flex-direction: column; gap: 10px;
+  justify-content: space-between;
+  transform: translate(-18px, 84px);
+  opacity: 0; animation: fadeIn .9s .55s forwards;
+}
+.dash-chrome {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+.dash-topbar {
+  background: #f7f9ff;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dash-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dash-dot.r { background: #ffb3b3; }
+.dash-dot.y { background: #ffe08a; }
+.dash-dot.g { background: #a8e6cf; }
+.dash-url {
+  margin-left: 8px; flex: 1;
+  background: var(--bg); border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 9px; font-weight: 500;
+  color: var(--gray); letter-spacing: .04em;
+}
+.dash-body {
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--bg);
+  flex: 1;
+}
+.dash-kpi-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+}
+.dash-kpi {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 10px;
+}
+.dash-kpi-val {
+  font-family: var(--bebas); font-size: 22px;
+  color: var(--blue); line-height: 1;
+}
+.dash-kpi-lbl {
+  font-size: 8px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--gray); margin-top: 3px;
+}
+.dash-chart {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.dash-chart-title {
+  font-size: 9px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gray); margin-bottom: 10px;
+}
+.dash-bars {
+  display: flex; align-items: flex-end; gap: 6px; height: 48px;
+}
+.dash-bar {
+  flex: 1; border-radius: 4px 4px 0 0;
+  background: var(--blue);
+  transition: height .5s;
+}
+.dash-bar:nth-child(1) { height: 35%; opacity: .4; }
+.dash-bar:nth-child(2) { height: 60%; opacity: .6; }
+.dash-bar:nth-child(3) { height: 45%; opacity: .5; }
+.dash-bar:nth-child(4) { height: 80%; opacity: .75; }
+.dash-bar:nth-child(5) { height: 70%; opacity: .85; }
+.dash-bar:nth-child(6) { height: 95%; }
+.dash-bar:nth-child(7) { height: 88%; opacity: .9; }
+.dash-row-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.dash-row-item {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.dash-row-name { font-size: 10px; font-weight: 500; color: var(--navy); }
+.dash-row-val { font-size: 9px; font-weight: 600; color: #0f8c4f; }
+.dash-row-bar {
+  height: 3px; background: var(--pale);
+  border-radius: 999px; margin-top: 4px; overflow: hidden;
+}
+.dash-row-fill {
+  height: 100%; background: var(--blue); border-radius: 999px;
+}
+/* Floating secondary card */
+.dash-float {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: none;
+  animation: float 4s ease-in-out infinite;
+}
+.dash-float-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--pale);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-float-icon svg { width: 16px; height: 16px; color: var(--blue); display: block; }
+.dash-float-txt { font-size: 11px; font-weight: 600; color: var(--navy); }
+.dash-float-sub { font-size: 9px; color: var(--gray); margin-top: 1px; }
+.dash-badge {
+  margin-left: auto;
+  font-family: var(--bebas); font-size: 18px; color: var(--blue);
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 2 — THE PROBLEM (Evidence + Pain)
+══════════════════════════════════════════ */
+.s-problem {
+  background: var(--bg);
+  display: grid; grid-template-columns: 1.05fr .95fr;
+  height: 100%; position: relative;
+}
+.prob-left {
+  padding: clamp(48px,6vw,96px) clamp(40px,5.5vw,88px);
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--border);
+  position: relative; z-index: 2;
+}
+.prob-stat-bg {
+  position: absolute; right: -24px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--bebas); font-size: clamp(120px,16vw,220px);
+  line-height: 1; color: rgba(26,91,255,.06);
+  user-select: none; pointer-events: none; letter-spacing: -.02em;
+}
+.prob-right {
+  padding: clamp(48px,5vw,80px) clamp(32px,4.5vw,72px);
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 12px;
+  position: relative; z-index: 2;
+}
+.pain-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: transform .2s, box-shadow .2s;
+}
+.pain-card:hover { transform: translateX(5px); box-shadow: -4px 0 0 var(--blue), 6px 16px 36px rgba(0,0,0,.07); }
+.pain-icon-wrap {
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: 10px; background: var(--pale);
+  display: flex; align-items: center; justify-content: center;
+}
+.pain-icon-wrap svg { width: 18px; height: 18px; color: var(--blue); display: block; }
+.pain-title {
+  font-family: var(--bebas); font-size: 17px;
+  letter-spacing: .07em; color: var(--navy); margin-bottom: 5px;
+}
+.pain-desc { font-size: 11.5px; font-weight: 300; color: var(--gray); line-height: 1.7; }
+
+/* ══════════════════════════════════════════
+   SLIDE 3 — SOLUTION (Statement + Pillars)
+══════════════════════════════════════════ */
+.s-solution {
+  background: var(--white);
+  height: 100%; position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: clamp(40px,5vw,72px) clamp(48px,7vw,120px);
+  overflow: hidden;
+}
+.sol-accent-line {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue) 0%, rgba(26,91,255,.2) 100%);
+}
+.sol-inner {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 1080px;
+}
+.sol-header {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: end; margin-bottom: 40px;
+}
+.sol-title {
+  font-family: var(--bebas);
+  font-size: clamp(56px, 7.5vw, 108px);
+  line-height: .88; letter-spacing: .01em; color: var(--navy);
+}
+.sol-title .outline {
+  -webkit-text-stroke: 2px rgba(13,17,23,.2); color: transparent;
+}
+.sol-right-block {
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 16px;
+}
+.sol-tagline {
+  font-size: clamp(13px,1.2vw,16px); font-weight: 300;
+  color: var(--gray); line-height: 1.85;
+}
+.sol-stats {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 2px;
+  border-radius: 12px; overflow: hidden;
+}
+.stat-box {
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 20px 16px; text-align: center;
+}
+.stat-box:first-child { border-radius: 12px 0 0 12px; }
+.stat-box:last-child { border-radius: 0 12px 12px 0; }
+.stat-n {
+  font-family: var(--bebas); font-size: clamp(32px,4vw,48px);
+  color: var(--blue); line-height: 1; margin-bottom: 5px;
+}
+.stat-l {
+  font-size: 10px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--gray);
+}
+.sol-pillars {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+}
+.pillar {
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 28px 24px; background: var(--bg);
+  position: relative; overflow: hidden;
+  transition: all .3s;
+}
+.pillar::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--blue);
+  transform: scaleX(0); transform-origin: left; transition: transform .3s;
+}
+.pillar:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(26,91,255,.1); border-color: transparent; }
+.pillar:hover::before { transform: scaleX(1); }
+.pillar-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--pale); display: flex;
+  align-items: center; justify-content: center; margin-bottom: 16px;
+}
+.pillar-icon svg { width: 20px; height: 20px; color: var(--blue); display: block; }
+.pillar-title {
+  font-family: var(--bebas); font-size: 19px;
+  letter-spacing: .06em; color: var(--navy); margin-bottom: 10px;
+}
+.pillar-desc { font-size: 12px; font-weight: 300; color: var(--gray); line-height: 1.75; }
+.pillar-num {
+  position: absolute; right: 14px; bottom: -6px;
+  font-family: var(--bebas); font-size: 72px;
+  color: rgba(0,0,0,.03); user-select: none;
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 4 — SERVICES (Card Grid)
+══════════════════════════════════════════ */
+.s-services {
+  background: var(--bg);
+  height: 100%; position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: clamp(36px,4.5vw,72px) clamp(40px,5.5vw,88px);
+}
+.svc-header { margin-bottom: 30px; }
+.svc-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 14px;
+}
+.svc-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 18px; padding: 30px 22px;
+  position: relative; overflow: hidden;
+  transition: all .3s; cursor: default;
+}
+.svc-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--blue);
+  transform: scaleX(0); transform-origin: left; transition: transform .35s;
+}
+.svc-card:hover { transform: translateY(-7px); box-shadow: 0 24px 56px rgba(26,91,255,.12); border-color: transparent; }
+.svc-card:hover::after { transform: scaleX(1); }
+.svc-icon-wrap {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--pale); display: flex;
+  align-items: center; justify-content: center; margin-bottom: 20px;
+}
+.svc-icon-wrap svg { width: 22px; height: 22px; color: var(--blue); display: block; }
+.svc-title {
+  font-family: var(--bebas); font-size: 20px;
+  letter-spacing: .06em; color: var(--navy); margin-bottom: 10px;
+}
+.svc-desc { font-size: 12px; font-weight: 300; color: var(--gray); line-height: 1.8; }
+.svc-tag {
+  margin-top: 18px; display: inline-block;
+  padding: 5px 13px; border: 1px solid var(--border);
+  border-radius: 100px; font-size: 9px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--blue);
+}
+.svc-num {
+  position: absolute; right: 10px; bottom: -10px;
+  font-family: var(--bebas); font-size: 88px;
+  color: rgba(0,0,0,.03); user-select: none;
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 5 — WHY BEFORTH (Comparison)
+══════════════════════════════════════════ */
+.s-why {
+  background: var(--bg);
+  height: 100%; position: relative;
+  display: grid; grid-template-columns: 1.1fr .9fr;
+  overflow: hidden;
+}
+.why-left {
+  padding: clamp(40px,5vw,80px) clamp(40px,5.5vw,88px);
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--border);
+  position: relative; z-index: 2; gap: 20px;
+}
+.why-kpi-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+}
+.why-kpi {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 12px;
+}
+.why-kpi-n {
+  font-family: var(--bebas); font-size: clamp(24px,3vw,36px);
+  line-height: 1; color: var(--blue);
+}
+.why-kpi-l {
+  font-size: 9px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gray); margin-top: 4px;
+}
+.why-caps { display: flex; flex-direction: column; gap: 10px; }
+.why-cap {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.cap-icon {
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px;
+  background: var(--pale); display: flex; align-items: center; justify-content: center;
+}
+.cap-icon svg { width: 15px; height: 15px; color: var(--blue); display: block; }
+.cap-name {
+  font-family: var(--bebas); font-size: 14px;
+  letter-spacing: .07em; color: var(--navy);
+}
+.cap-desc { font-size: 11px; font-weight: 300; color: var(--gray); line-height: 1.6; margin-top: 2px; }
+
+/* Right: comparison table */
+.why-right {
+  padding: clamp(40px,5vw,80px) clamp(32px,4.5vw,72px);
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 2; gap: 16px;
+}
+.compare-title {
+  font-family: var(--bebas); font-size: 17px;
+  letter-spacing: .08em; color: var(--gray);
+  margin-bottom: 4px;
+}
+.compare-table {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.compare-head {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+  background: #f7f9ff; border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.compare-head div {
+  padding: 11px 14px; font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--gray);
+}
+.compare-head .col-bf { color: var(--blue); }
+.compare-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+  border-bottom: 1px solid #eef2fb;
+}
+.compare-row:last-child { border-bottom: none; }
+.compare-row div {
+  padding: 11px 14px; font-size: 11px; font-weight: 400;
+  color: var(--navy); display: flex; align-items: center; gap: 6px;
+}
+.compare-row .feature { font-weight: 500; color: var(--gray); font-size: 10.5px; }
+.check { color: #0f8c4f; font-size: 14px; font-weight: 700; }
+.cross { color: #c0392b; font-size: 14px; font-weight: 700; }
+.partial { color: #e67e22; font-size: 14px; font-weight: 700; }
+
+/* ══════════════════════════════════════════
+   SLIDE 6 — PROCESS (Numbered Timeline)
+══════════════════════════════════════════ */
+.s-process {
+  background: var(--white);
+  height: 100%; position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: clamp(40px,5vw,80px) clamp(40px,6vw,100px);
+  overflow: hidden;
+}
+.proc-header { margin-bottom: clamp(32px,4vw,56px); }
+.proc-timeline {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  position: relative; gap: 0;
+}
+.proc-connector {
+  position: absolute;
+  top: 40px; left: 40px; right: 40px; height: 2px;
+  background: var(--border);
+  z-index: 1;
+}
+.proc-connector-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--blue) 0%, rgba(26,91,255,.3) 100%);
+}
+.proc-step {
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  padding: 0 16px; position: relative; z-index: 2;
+}
+.step-num {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--bebas); font-size: 26px; color: var(--navy);
+  margin-bottom: 20px; transition: all .35s; position: relative; z-index: 2;
+}
+.proc-step:hover .step-num,
+.proc-step.active-step .step-num {
+  background: var(--blue); border-color: var(--blue);
+  color: #fff; transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(26,91,255,.35);
+}
+.step-name {
+  font-family: var(--bebas); font-size: 17px;
+  letter-spacing: .08em; color: var(--navy); margin-bottom: 9px;
+}
+.step-desc { font-size: 11px; font-weight: 300; color: var(--gray); line-height: 1.75; }
+.proc-intro { max-width: 560px; }
+.proc-phase-bar {
+  margin-top: 40px; display: grid;
+  grid-template-columns: 2fr 4fr 3fr 2fr 2fr; gap: 4px;
+}
+.proc-phase {
+  height: 4px; border-radius: 2px;
+}
+.proc-phase:nth-child(1) { background: rgba(26,91,255,.25); }
+.proc-phase:nth-child(2) { background: rgba(26,91,255,.5); }
+.proc-phase:nth-child(3) { background: rgba(26,91,255,.75); }
+.proc-phase:nth-child(4) { background: var(--blue); }
+.proc-phase:nth-child(5) { background: #0f43d4; }
+
+/* ══════════════════════════════════════════
+   SLIDE 7 — TECH STACK (Split Panel)
+══════════════════════════════════════════ */
+.s-tech {
+  background: var(--white);
+  height: 100%; display: grid; grid-template-columns: 1fr 1.05fr;
+  position: relative;
+}
+.tech-left {
+  padding: clamp(48px,6vw,100px) clamp(40px,5.5vw,88px);
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--border);
+}
+.tech-left .body-txt { margin-bottom: 28px; }
+.quote-block {
+  border-left: 3px solid var(--blue);
+  padding-left: 20px; margin-top: 8px;
+}
+.quote-txt {
+  font-family: var(--bebas); font-size: 21px;
+  letter-spacing: .04em; line-height: 1.2; color: var(--navy); margin-bottom: 6px;
+}
+.quote-attr {
+  font-size: 10px; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--blue);
+}
+
+/* Right panel: dark with tech rows */
+.tech-right {
+  background: var(--navy);
+  padding: clamp(40px,5vw,80px) clamp(36px,4.5vw,72px);
+  display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  position: relative; overflow: hidden;
+}
+.tech-right::before {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--blue) 0%, rgba(26,91,255,.2) 100%);
+}
+.tech-cat-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: rgba(255,255,255,.25);
+  padding: 10px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 4px;
+}
+.tech-cat-label:first-child { padding-top: 0; }
+.tech-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  transition: background .2s;
+}
+.tech-row:hover { background: rgba(26,91,255,.1); border-color: rgba(26,91,255,.2); }
+.tech-icon-box {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 8px; background: rgba(26,91,255,.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.tech-icon-box svg { width: 16px; height: 16px; color: var(--blue); display: block; }
+.tech-name { font-family: var(--bebas); font-size: 16px; letter-spacing: .07em; color: #fff; flex: 1; }
+.tech-type { font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.25); }
+
+/* ══════════════════════════════════════════
+   SLIDE 8 — ENGAGEMENT MODEL (3-Phase)
+══════════════════════════════════════════ */
+.s-engage {
+  background: var(--bg);
+  height: 100%; display: grid; grid-template-columns: 1.05fr 1fr;
+  position: relative;
+}
+.eng-left {
+  padding: clamp(48px,6vw,100px) clamp(40px,5.5vw,88px);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 2;
+}
+.eng-left .body-txt { margin-bottom: 24px; }
+.eng-deliver {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.eng-pill {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 100px; padding: 8px 14px;
+  font-size: 10px; font-weight: 500; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--navy);
+}
+.eng-right {
+  padding: clamp(40px,5vw,80px) clamp(32px,4.5vw,72px);
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 2;
+}
+.eng-phases { display: flex; flex-direction: column; gap: 0; position: relative; }
+.eng-phases::before {
+  content: '';
+  position: absolute; left: 24px; top: 24px; bottom: 24px; width: 2px;
+  background: linear-gradient(180deg, var(--blue) 0%, rgba(26,91,255,.2) 100%);
+}
+.eng-phase {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 22px 20px 0;
+  position: relative;
+}
+.eng-phase:not(:last-child) { border-bottom: 1px solid var(--border); }
+.eng-num {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--white); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--bebas); font-size: 18px; color: var(--navy);
+  position: relative; z-index: 2; transition: all .3s;
+}
+.eng-phase:first-child .eng-num { background: var(--blue); border-color: var(--blue); color: #fff; }
+.eng-phase-body { flex: 1; }
+.eng-name { font-family: var(--bebas); font-size: 20px; letter-spacing: .06em; color: var(--navy); margin-bottom: 5px; }
+.eng-desc { font-size: 11.5px; font-weight: 300; color: var(--gray); line-height: 1.7; }
+.eng-time-badge {
+  margin-top: 8px; display: inline-block;
+  padding: 4px 12px; border: 1px solid var(--border);
+  border-radius: 100px; font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--blue);
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 9 — OUTCOMES (Metrics + Governance)
+══════════════════════════════════════════ */
+.s-outcomes {
+  background: var(--bg);
+  height: 100%; display: grid; grid-template-columns: 1fr 1fr;
+  position: relative; overflow: hidden;
+}
+.out-left {
+  padding: clamp(48px,6vw,96px) clamp(40px,5.5vw,88px);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 2;
+}
+.out-left .body-txt { margin-bottom: 20px; }
+.impact-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.impact-box {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 14px;
+}
+.impact-n {
+  font-family: var(--bebas); font-size: clamp(28px,3.5vw,40px);
+  line-height: 1; color: var(--blue); margin-bottom: 5px;
+}
+.impact-l {
+  font-size: 10px; font-weight: 600; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--gray); margin-bottom: 10px;
+}
+.impact-bar { height: 3px; background: var(--pale); border-radius: 999px; overflow: hidden; margin-top: auto; }
+.impact-fill { height: 100%; background: var(--blue); border-radius: 999px; transition: width 1.2s .8s ease; }
+
+.out-right {
+  padding: clamp(48px,5vw,80px) clamp(32px,4.5vw,72px);
+  display: flex; flex-direction: column; justify-content: center; gap: 10px;
+  position: relative; z-index: 2;
+}
+.gov-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: all .2s;
+}
+.gov-card:hover { border-color: rgba(26,91,255,.3); box-shadow: 0 4px 16px rgba(26,91,255,.08); }
+.gov-icon-wrap {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px;
+  background: var(--pale); display: flex; align-items: center; justify-content: center;
+}
+.gov-icon-wrap svg { width: 16px; height: 16px; color: var(--blue); display: block; }
+.gov-title { font-family: var(--bebas); font-size: 15px; letter-spacing: .07em; color: var(--navy); margin-bottom: 4px; }
+.gov-desc { font-size: 11px; font-weight: 300; line-height: 1.6; color: var(--gray); }
+
+/* ══════════════════════════════════════════
+   SLIDES 10–11 — DATA SNAPSHOTS
+══════════════════════════════════════════ */
+.s-data {
+  background: var(--bg);
+  height: 100%; position: relative;
+  padding: clamp(32px,4vw,60px) clamp(36px,5.5vw,88px);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 14px;
+}
+.deck-head { position: relative; z-index: 2; }
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+  position: relative; z-index: 2;
+}
+.metric-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 14px;
+}
+.metric-value {
+  font-family: var(--bebas); font-size: clamp(26px,3.2vw,38px);
+  color: var(--blue); line-height: 1;
+}
+.metric-label {
+  margin-top: 5px; font-size: 9.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--gray);
+}
+.table-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  position: relative; z-index: 2;
+}
+.t-head, .t-row {
+  display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr;
+}
+.t-head { background: #f7f9ff; border-bottom: 1px solid var(--border); }
+.t-head div { padding: 10px 13px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gray); }
+.t-row { border-bottom: 1px solid #eef2fb; }
+.t-row:last-child { border-bottom: none; }
+.t-row div { padding: 11px 13px; font-size: 11px; color: var(--navy); }
+.t-row div:first-child { color: var(--gray); }
+.delta-up { color: #0f8c4f; font-weight: 700; }
+.delta-down { color: #b03a3a; font-weight: 700; }
+
+/* Mini horizontal bar chart */
+.mini-chart {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+  position: relative; z-index: 2;
+}
+.mini-chart-title {
+  font-size: 9px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--gray); margin-bottom: 12px;
+}
+.mini-bar-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.mini-bar-row:last-child { margin-bottom: 0; }
+.mini-bar-lbl { font-size: 10px; font-weight: 500; color: var(--navy); width: 100px; flex-shrink: 0; }
+.mini-bar-track {
+  flex: 1; height: 8px; background: var(--pale);
+  border-radius: 4px; overflow: hidden; position: relative;
+}
+.mini-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: var(--blue);
+  width: var(--w, 50%);
+}
+.slide.active .mini-bar-fill { animation: bar-grow .9s ease forwards; animation-delay: .6s; }
+.mini-bar-fill.good { background: #0f8c4f; }
+.mini-bar-fill.warn { background: #e67e22; }
+.mini-bar-val { font-size: 10px; font-weight: 700; color: var(--navy); width: 44px; text-align: right; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════
+   SLIDES 12–15 — PROJECT PREVIEWS
+══════════════════════════════════════════ */
+.s-embeds {
+  background: var(--bg);
+  height: 100%; position: relative;
+  padding: clamp(24px,3.5vw,52px) clamp(28px,5vw,80px);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.s-embeds .deck-head { margin-bottom: 4px; }
+.s-embeds .section-title { font-size: clamp(32px,4.5vw,60px); line-height: .9; margin-bottom: 10px; }
+.s-embeds .rule { margin-bottom: 10px; }
+.embed-single {
+  max-width: 1100px; width: 100%; margin: 0 auto;
+  position: relative; z-index: 2; flex: 1; min-height: 0; display: flex;
+}
+.embed-chrome {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column; width: 100%;
+  box-shadow: 0 20px 60px rgba(13,17,23,.1);
+}
+.embed-topbar {
+  background: #f7f9ff; border-bottom: 1px solid var(--border);
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+}
+.embed-topbar .dash-dot { flex-shrink: 0; }
+.embed-brand-duo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 2px;
+}
+.embed-logo-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  object-fit: contain;
+  padding: 3px;
+}
+.embed-logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  padding: 3px 9px 3px 4px;
+}
+.embed-logo-lockup img {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  object-fit: contain;
+  padding: 2px;
+  background: #fff;
+}
+.embed-logo-lockup span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.embed-url-bar {
+  flex: 1; background: var(--bg); border-radius: 7px;
+  padding: 5px 12px; display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 500; color: var(--gray); letter-spacing: .02em;
+}
+.embed-lock-icon { width: 10px; height: 10px; color: #0f8c4f; }
+.embed-actions { display: flex; align-items: center; gap: 8px; }
+.embed-tag-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--blue);
+  border: 1px solid rgba(26,91,255,.2); border-radius: 6px; padding: 4px 8px;
+}
+.embed-open-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--border); border-radius: 100px;
+  padding: 5px 11px; font-size: 9px; font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--navy); background: var(--white); text-decoration: none;
+  transition: all .2s;
+}
+.embed-open-btn:hover { border-color: var(--blue); color: var(--blue); }
+.embed-frame-wrap { flex: 1; min-height: 0; }
+.embed-frame { width: 100%; height: 100%; border: 0; background: #f3f6ff; display: block; }
+.embed-footer {
+  padding: 8px 14px; border-top: 1px solid var(--border);
+  background: #f7f9ff; display: flex; justify-content: space-between;
+  align-items: center; font-size: 9.5px; color: var(--gray);
+}
+.embed-footer a { color: var(--blue); text-decoration: none; font-weight: 700; letter-spacing: .04em; }
+
+/* ══════════════════════════════════════════
+   SLIDE 16 — CASE STUDIES
+══════════════════════════════════════════ */
+.s-cases {
+  background: var(--bg);
+  height: 100%; position: relative;
+  padding: clamp(36px,4.5vw,68px) clamp(40px,5.5vw,88px);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.cases-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  position: relative; z-index: 2;
+}
+.case-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px;
+  display: flex; flex-direction: column; gap: 0;
+  transition: all .25s;
+}
+.case-card:hover { box-shadow: 0 16px 48px rgba(26,91,255,.1); transform: translateY(-3px); }
+.case-meta {
+  font-size: 9px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 8px;
+}
+.case-name {
+  font-family: var(--bebas); font-size: 20px;
+  letter-spacing: .06em; color: var(--navy); margin-bottom: 12px;
+}
+.case-kpis { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.case-kpi {
+  display: inline-block; border: 1px solid rgba(26,91,255,.2);
+  background: var(--pale); border-radius: 999px;
+  padding: 5px 11px; font-size: 9px; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--blue);
+}
+.case-divider { height: 1px; background: var(--border); margin: 0 0 14px; }
+.case-row { font-size: 11.5px; line-height: 1.6; color: var(--gray); margin-bottom: 8px; }
+.case-row:last-child { margin-bottom: 0; }
+.case-row b { color: var(--navy); font-weight: 600; }
+
+/* ══════════════════════════════════════════
+   SLIDE 17 — CTA (Closing Statement)
+══════════════════════════════════════════ */
+.s-cta {
+  background: var(--navy);
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+/* Subtle noise overlay */
+.s-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: .6; pointer-events: none;
+}
+.cta-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(26,91,255,.18);
+  pointer-events: none;
+}
+.cta-ring-1 { width: 480px; height: 480px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: pulse-ring 3s ease-in-out infinite; }
+.cta-ring-2 { width: 720px; height: 720px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: pulse-ring 3s 1s ease-in-out infinite; }
+.cta-ring-3 { width: 980px; height: 980px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: pulse-ring 3s 2s ease-in-out infinite; }
+.cta-glow {
+  position: absolute; width: 640px; height: 640px;
+  background: radial-gradient(circle, rgba(26,91,255,.2) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.cta-inner {
+  position: relative; z-index: 2;
+  text-align: center; padding: clamp(40px,5vw,80px);
+  max-width: 820px; width: 100%;
+}
+.cta-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--blue);
+  margin-bottom: 28px; display: block;
+}
+.cta-title {
+  font-family: var(--bebas);
+  font-size: clamp(64px,9.5vw,140px);
+  line-height: .88; letter-spacing: .01em;
+  color: var(--white); margin-bottom: 28px;
+}
+.cta-title .outline {
+  -webkit-text-stroke: 2px rgba(255,255,255,.28); color: transparent;
+}
+.cta-sub {
+  font-size: clamp(13px,1.2vw,16px); font-weight: 300;
+  color: rgba(255,255,255,.4); line-height: 1.85;
+  max-width: 500px; margin: 0 auto 44px;
+}
+.cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  padding: 15px 36px; background: var(--blue); color: #fff;
+  border-radius: 100px; font-size: 12px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  transition: all .25s;
+}
+.btn-primary:hover { background: var(--blue-d); transform: translateY(-2px); box-shadow: 0 14px 36px rgba(26,91,255,.45); }
+.btn-outline {
+  padding: 14px 32px; background: transparent;
+  color: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.2); border-radius: 100px;
+  font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  transition: all .25s;
+}
+.btn-outline:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+.btn-icon { width: 15px; height: 15px; display: block; }
+.btn-icon svg { width: 100%; height: 100%; display: block; }
+.cta-contact {
+  margin-top: 44px; display: flex; gap: 32px;
+  justify-content: center; flex-wrap: wrap;
+}
+.cta-contact-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 300; color: rgba(255,255,255,.35);
+}
+.cta-contact-item .cti-icon { width: 14px; height: 14px; color: rgba(255,255,255,.35); }
+.cta-contact-item .cti-icon svg { width: 100%; height: 100%; display: block; }
+.cta-contact-item span { color: rgba(255,255,255,.55); }
+.cta-contact-item a {
+  color: rgba(255,255,255,.62);
+  text-decoration: none;
+  transition: color .2s;
+}
+.cta-contact-item a:hover { color: #fff; }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 1200px) {
+  .svc-grid { grid-template-columns: repeat(2,1fr); }
+  .sol-pillars { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 900px) {
+  .s-cover, .s-problem, .s-why, .s-tech, .s-engage, .s-outcomes { grid-template-columns: 1fr; }
+  .cov-right { min-height: 220px; }
+  .prob-left, .tech-left, .why-left, .eng-left, .out-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .proc-timeline { grid-template-columns: 1fr; }
+  .proc-connector { display: none; }
+  .sol-header { grid-template-columns: 1fr; }
+  .metrics-grid, .why-kpi-row { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 600px) {
+  .svc-grid, .sol-pillars, .impact-grid, .cases-grid, .metrics-grid { grid-template-columns: 1fr; }
+  .s-embeds { padding: 14px; }
+  .embed-topbar { flex-wrap: wrap; }
+  .embed-brand-duo { width: 100%; }
+  .embed-url-bar { min-width: 0; }
+  .embed-actions { margin-left: auto; }
+}
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ══ SLIDE 1: COVER ══ -->
+<div class="slide active" id="slide-0">
+  <div class="s-cover">
+    <div class="dot-grid-light"></div>
+    <div class="cov-left">
+      <div class="cov-brand">
+        <img class="cov-brand-full" src="https://brand.beforth.in/Full%20Size%20logo%20black.png" alt="Beforth logo">
+      </div>
+      <div class="cov-eyebrow">Corporate Presentation · 2026</div>
+      <div class="cov-headline">
+        WE BUILD<br>
+        <span class="stroke">SCALABLE</span><br>
+        SOFTWARE.
+      </div>
+      <p class="cov-sub">Beforth is a software development company helping organizations transform manual operations into scalable digital systems. We deliver secure, reliable products aligned with strategic business growth.</p>
+      <div class="cov-pills">
+        <span class="pill pill-b">Custom ERPs</span>
+        <span class="pill pill-o">Mobile Apps</span>
+        <span class="pill pill-o">Web Platforms</span>
+        <span class="pill pill-o">HRMS & CRM</span>
+      </div>
+    </div>
+    <div class="cov-right">
+      <div class="dashboard-mock">
+        <div class="dash-chrome">
+          <div class="dash-topbar">
+            <div class="dash-dot r"></div>
+            <div class="dash-dot y"></div>
+            <div class="dash-dot g"></div>
+            <div class="dash-url">app.beforth.in/dashboard</div>
+          </div>
+          <div class="dash-body">
+            <div class="dash-kpi-row">
+              <div class="dash-kpi"><div class="dash-kpi-val">38%</div><div class="dash-kpi-lbl">Throughput ↑</div></div>
+              <div class="dash-kpi"><div class="dash-kpi-val">-54%</div><div class="dash-kpi-lbl">Cycle Time ↓</div></div>
+              <div class="dash-kpi"><div class="dash-kpi-val">82%</div><div class="dash-kpi-lbl">SLA Met</div></div>
+            </div>
+            <div class="dash-chart">
+              <div class="dash-chart-title">Monthly Performance Index</div>
+              <div class="dash-bars">
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+                <div class="dash-bar"></div>
+              </div>
+            </div>
+            <div class="dash-row-list">
+              <div class="dash-row-item">
+                <div><div class="dash-row-name">Finance Module</div><div class="dash-row-bar"><div class="dash-row-fill" style="width:82%"></div></div></div>
+                <div class="dash-row-val">+82%</div>
+              </div>
+              <div class="dash-row-item">
+                <div><div class="dash-row-name">Operations ERP</div><div class="dash-row-bar"><div class="dash-row-fill" style="width:74%"></div></div></div>
+                <div class="dash-row-val">+74%</div>
+              </div>
+              <div class="dash-row-item">
+                <div><div class="dash-row-name">Field Mobility</div><div class="dash-row-bar"><div class="dash-row-fill" style="width:91%"></div></div></div>
+                <div class="dash-row-val">+91%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-float">
+          <div class="dash-float-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+          </div>
+          <div>
+            <div class="dash-float-txt">Deployment Ready</div>
+            <div class="dash-float-sub">Production hardened · Fully documented</div>
+          </div>
+          <div class="dash-badge">✓</div>
+        </div>
+      </div>
+    </div>
+    <div class="cov-tagline">beforth.in — Build the Remarkable</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2: THE PROBLEM ══ -->
+<div class="slide" id="slide-1">
+  <div class="s-problem">
+    <div class="dot-grid-light"></div>
+    <div class="prob-left">
+      <div class="eyebrow anim-1">The Problem</div>
+      <div class="section-title anim-2">Businesses Are<br>Stuck on <span class="blue">Broken</span><br>Tools.</div>
+      <div class="rule anim-3"></div>
+      <p class="body-txt anim-4">Most companies run operations on a patchwork of spreadsheets, outdated off-the-shelf software, and manual processes that weren't designed for growth.</p>
+      <p class="body-txt anim-5" style="margin-top:10px">The result? Wasted hours, missed opportunities, and teams spending more time fighting their tools than doing real work.</p>
+      <div class="prob-stat-bg anim-6">73%</div>
+    </div>
+    <div class="prob-right">
+      <div class="pain-card anim-3">
+        <div class="pain-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16v-5"/><path d="M17 16V6"/></svg></div>
+        <div>
+          <div class="pain-title">Spreadsheet Overload</div>
+          <div class="pain-desc">Teams managing hundreds of rows in Excel for things that should be automated — prone to errors, impossible to scale.</div>
+        </div>
+      </div>
+      <div class="pain-card anim-4">
+        <div class="pain-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div>
+          <div class="pain-title">Disconnected Systems</div>
+          <div class="pain-desc">HR data lives in one place, sales in another, inventory elsewhere. No single source of truth slows every decision.</div>
+        </div>
+      </div>
+      <div class="pain-card anim-5">
+        <div class="pain-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+        <div>
+          <div class="pain-title">Off-the-shelf Doesn't Fit</div>
+          <div class="pain-desc">Generic SaaS tools force businesses to adapt their workflows to the software, not the other way around.</div>
+        </div>
+      </div>
+      <div class="pain-card anim-6">
+        <div class="pain-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div>
+          <div class="pain-title">Hidden Cost of Inefficiency</div>
+          <div class="pain-desc">Manual processes, re-entry errors, and slow approvals silently bleed thousands of hours and rupees every year.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: SOLUTION ══ -->
+<div class="slide" id="slide-2">
+  <div class="s-solution">
+    <div class="dot-grid-light"></div>
+    <div class="sol-accent-line"></div>
+    <div class="sol-inner">
+      <div class="sol-header">
+        <div>
+          <div class="eyebrow anim-1">Our Solution</div>
+          <div class="sol-title anim-2">
+            Custom Software<br>
+            <span class="outline">That Actually</span><br>
+            Works.
+          </div>
+        </div>
+        <div class="sol-right-block">
+          <p class="sol-tagline anim-3">We design and build around how your business runs — not the other way around. Sharp product thinking, clean engineering, interfaces your team wants to use.</p>
+          <div class="sol-stats anim-4">
+            <div class="stat-box"><div class="stat-n">100%</div><div class="stat-l">Custom Built</div></div>
+            <div class="stat-box"><div class="stat-n">4×</div><div class="stat-l">Faster Delivery</div></div>
+            <div class="stat-box"><div class="stat-n">∞</div><div class="stat-l">Scalable</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-pillars anim-5">
+        <div class="pillar">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+          <div class="pillar-title">Built for Your Workflow</div>
+          <div class="pillar-desc">Every module maps to your approvals, roles, and business logic — not generic templates.</div>
+          <div class="pillar-num">01</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="pillar-title">Security First, Always</div>
+          <div class="pillar-desc">Role-based access, audit logs, backup strategy and production hardening baked in from day one.</div>
+          <div class="pillar-num">02</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
+          <div class="pillar-title">Scales With You</div>
+          <div class="pillar-desc">Architecture designed for today and tomorrow — add modules, users, and integrations without rewrites.</div>
+          <div class="pillar-num">03</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: SERVICES ══ -->
+<div class="slide" id="slide-3">
+  <div class="s-services">
+    <div class="dot-grid-light"></div>
+    <div class="svc-header">
+      <div class="eyebrow anim-1">What We Build</div>
+      <div class="section-title anim-2">Our <span class="blue">Services</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="svc-grid anim-4">
+      <div class="svc-card">
+        <div class="svc-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-8-4-8 4v12Z"/><path d="M6 20V10h4v10"/><path d="M14 20v-4h4v4"/></svg></div>
+        <div class="svc-title">Custom ERPs</div>
+        <div class="svc-desc">End-to-end enterprise resource planning systems built around your operations — inventory, finance, procurement, and more.</div>
+        <span class="svc-tag">Enterprise</span>
+        <div class="svc-num">01</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg></div>
+        <div class="svc-title">Mobile Apps</div>
+        <div class="svc-desc">Native and cross-platform mobile applications for iOS and Android — consumer-grade design with production-ready reliability.</div>
+        <span class="svc-tag">iOS & Android</span>
+        <div class="svc-num">02</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg></div>
+        <div class="svc-title">Web Platforms</div>
+        <div class="svc-desc">Scalable web applications and dashboards that run fast, look stunning, and handle real-world business complexity.</div>
+        <span class="svc-tag">SaaS & Portals</span>
+        <div class="svc-num">03</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="svc-title">HRMS & CRM</div>
+        <div class="svc-desc">Human resource and customer relationship systems that replace spreadsheets with intelligent, automated workflows.</div>
+        <span class="svc-tag">People & Sales</span>
+        <div class="svc-num">04</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: WHY BEFORTH ══ -->
+<div class="slide" id="slide-4">
+  <div class="s-why">
+    <div class="dot-grid-light"></div>
+    <div class="why-left">
+      <div>
+        <div class="eyebrow anim-1">Decision Guide</div>
+        <div class="section-title anim-2">Why Companies<br><span class="blue">Choose Beforth</span></div>
+        <div class="rule anim-3"></div>
+        <p class="body-txt anim-4">A partnership model built for outcomes: faster execution, clearer ownership, and software that scales with your business.</p>
+      </div>
+      <div class="why-kpi-row anim-5">
+        <div class="why-kpi"><div class="why-kpi-n">-54%</div><div class="why-kpi-l">Cycle Time</div></div>
+        <div class="why-kpi"><div class="why-kpi-n">+31%</div><div class="why-kpi-l">Productivity</div></div>
+        <div class="why-kpi"><div class="why-kpi-n">SLA</div><div class="why-kpi-l">Post-Launch</div></div>
+      </div>
+      <div class="why-caps anim-6">
+        <div class="why-cap">
+          <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+          <div><div class="cap-name">Execution You Can Trust</div><div class="cap-desc">Weekly milestones, visible status, and predictable launch paths with fewer surprises.</div></div>
+        </div>
+        <div class="why-cap">
+          <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div><div class="cap-name">Business-First Product Thinking</div><div class="cap-desc">Modules designed around your approvals, stakeholders, and measurable business goals.</div></div>
+        </div>
+        <div class="why-cap">
+          <div class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div><div class="cap-name">Long-Term Ownership</div><div class="cap-desc">Clean architecture, documentation, and post-launch support for sustained value.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why-right">
+      <div class="compare-title anim-2">How We Stack Up</div>
+      <div class="compare-table anim-3">
+        <div class="compare-head">
+          <div>What You Need</div>
+          <div>Status Quo</div>
+          <div class="col-bf">With Beforth</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Custom-fit Workflow</div>
+          <div><span class="cross">✗</span> Generic templates</div>
+          <div><span class="check">✓</span> Built to match</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Predictable Timeline</div>
+          <div><span class="partial">~</span> Often delayed</div>
+          <div><span class="check">✓</span> Weekly milestones</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Role-based Security</div>
+          <div><span class="cross">✗</span> Add-on after launch</div>
+          <div><span class="check">✓</span> Day one</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Post-launch Support</div>
+          <div><span class="partial">~</span> Extra cost</div>
+          <div><span class="check">✓</span> SLA included</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Full Documentation</div>
+          <div><span class="cross">✗</span> Rarely delivered</div>
+          <div><span class="check">✓</span> Always delivered</div>
+        </div>
+        <div class="compare-row">
+          <div class="feature">Scalable Architecture</div>
+          <div><span class="partial">~</span> Rebuild needed</div>
+          <div><span class="check">✓</span> Future-proofed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: PROCESS ══ -->
+<div class="slide" id="slide-5">
+  <div class="s-process">
+    <div class="dot-grid-light"></div>
+    <div class="proc-header">
+      <div class="eyebrow anim-1">How We Work</div>
+      <div class="section-title anim-2">Our <span class="blue">Process</span></div>
+      <div class="rule anim-3"></div>
+      <p class="body-txt anim-4 proc-intro">From discovery to deployment, every project follows our battle-tested process — designed to move fast without breaking things.</p>
+    </div>
+    <div class="proc-timeline anim-5">
+      <div class="proc-connector"><div class="proc-connector-fill"></div></div>
+      <div class="proc-step active-step">
+        <div class="step-num">01</div>
+        <div class="step-name">Discover</div>
+        <div class="step-desc">Deep-dive into your business, workflows, pain points &amp; goals.</div>
+      </div>
+      <div class="proc-step">
+        <div class="step-num">02</div>
+        <div class="step-name">Design</div>
+        <div class="step-desc">UX maps, wireframes, and high-fidelity UI prototypes.</div>
+      </div>
+      <div class="proc-step">
+        <div class="step-num">03</div>
+        <div class="step-name">Build</div>
+        <div class="step-desc">Agile sprints, weekly demos, clean production-grade code.</div>
+      </div>
+      <div class="proc-step">
+        <div class="step-num">04</div>
+        <div class="step-name">Launch</div>
+        <div class="step-desc">Deployment, QA, onboarding, and team training.</div>
+      </div>
+      <div class="proc-step">
+        <div class="step-num">05</div>
+        <div class="step-name">Support</div>
+        <div class="step-desc">Ongoing maintenance, feature additions &amp; growth sprints.</div>
+      </div>
+    </div>
+    <div class="proc-phase-bar anim-6">
+      <div class="proc-phase"></div>
+      <div class="proc-phase"></div>
+      <div class="proc-phase"></div>
+      <div class="proc-phase"></div>
+      <div class="proc-phase"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: TECH STACK ══ -->
+<div class="slide" id="slide-6">
+  <div class="s-tech">
+    <div class="tech-left">
+      <div class="eyebrow anim-1">What We Use</div>
+      <div class="section-title anim-2">Tech Built<br>for <span class="blue">Scale.</span></div>
+      <div class="rule anim-3"></div>
+      <p class="body-txt anim-4">We choose the right tool for every job. No dogma — just pragmatic, battle-tested technology that delivers robust, maintainable products.</p>
+      <div class="quote-block anim-5">
+        <div class="quote-txt">Forward by design. Always.</div>
+        <div class="quote-attr">Beforth Core Value</div>
+      </div>
+    </div>
+    <div class="tech-right">
+      <div class="tech-cat-label anim-2">Frontend & Mobile</div>
+      <div class="tech-row anim-3">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div class="tech-name">React, Flutter & React Native</div>
+        <div class="tech-type">Frontend / Mobile</div>
+      </div>
+      <div class="tech-cat-label anim-3">Backend & Fullstack</div>
+      <div class="tech-row anim-4">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><path d="M6 6h.01M6 18h.01"/></svg></div>
+        <div class="tech-name">Node.js, Django & FastAPI</div>
+        <div class="tech-type">Backend / APIs</div>
+      </div>
+      <div class="tech-cat-label anim-4">Data & Cloud</div>
+      <div class="tech-row anim-5">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <div class="tech-name">PostgreSQL & MongoDB</div>
+        <div class="tech-type">Database</div>
+      </div>
+      <div class="tech-row anim-6">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10Z"/></svg></div>
+        <div class="tech-name">AWS & Vercel</div>
+        <div class="tech-type">Cloud & Hosting</div>
+      </div>
+      <div class="tech-cat-label anim-6">Architecture & AI</div>
+      <div class="tech-row anim-7">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div>
+        <div class="tech-name">Security-First Architecture</div>
+        <div class="tech-type">Design Pattern</div>
+      </div>
+      <div class="tech-row anim-8">
+        <div class="tech-icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <div class="tech-name">AI / ML Integration</div>
+        <div class="tech-type">Intelligence Layer</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: ENGAGEMENT ══ -->
+<div class="slide" id="slide-7">
+  <div class="s-engage">
+    <div class="dot-grid-light"></div>
+    <div class="eng-left">
+      <div class="eyebrow anim-1">Engagement Model</div>
+      <div class="section-title anim-2">How We<br><span class="blue">Partner</span> With You</div>
+      <div class="rule anim-3"></div>
+      <p class="body-txt anim-4">Each project is planned as a clear business engagement. You get transparent scope, accountable timelines, and measurable outcomes at every stage.</p>
+      <div class="eng-deliver anim-5">
+        <div class="eng-pill">Scope Document</div>
+        <div class="eng-pill">UI/UX Prototype</div>
+        <div class="eng-pill">Weekly Demo Reviews</div>
+        <div class="eng-pill">Training & Handover</div>
+        <div class="eng-pill">SLA Support Plan</div>
+        <div class="eng-pill">Roadmap for Phase 2</div>
+      </div>
+    </div>
+    <div class="eng-right">
+      <div class="eng-phases anim-4">
+        <div class="eng-phase">
+          <div class="eng-num">01</div>
+          <div class="eng-phase-body">
+            <div class="eng-name">Discovery & Blueprint</div>
+            <div class="eng-desc">Business process mapping, requirement freeze, architecture plan, and execution roadmap.</div>
+            <div class="eng-time-badge">1–2 Weeks</div>
+          </div>
+        </div>
+        <div class="eng-phase">
+          <div class="eng-num">02</div>
+          <div class="eng-phase-body">
+            <div class="eng-name">Build in Sprints</div>
+            <div class="eng-desc">Feature milestones with weekly demos, QA gates, and stakeholder approvals to avoid surprises.</div>
+            <div class="eng-time-badge">4–12 Weeks</div>
+          </div>
+        </div>
+        <div class="eng-phase">
+          <div class="eng-num">03</div>
+          <div class="eng-phase-body">
+            <div class="eng-name">Launch & Growth Support</div>
+            <div class="eng-desc">Production launch, team onboarding, analytics setup, and post-launch optimization sprints.</div>
+            <div class="eng-time-badge">Ongoing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: OUTCOMES ══ -->
+<div class="slide" id="slide-8">
+  <div class="s-outcomes">
+    <div class="dot-grid-light"></div>
+    <div class="out-left">
+      <div class="eyebrow anim-1">Business Case</div>
+      <div class="section-title anim-2">Expected<br><span class="blue">Outcomes</span></div>
+      <div class="rule anim-3"></div>
+      <p class="body-txt anim-4">Our projects are designed to reduce operational friction and deliver measurable business impact — not just new screens.</p>
+      <div class="impact-grid anim-5">
+        <div class="impact-box">
+          <div class="impact-n">30–60%</div>
+          <div class="impact-l">Process Time Reduction</div>
+          <div class="impact-bar"><div class="impact-fill" style="--w:60%"></div></div>
+        </div>
+        <div class="impact-box">
+          <div class="impact-n">2–4×</div>
+          <div class="impact-l">Team Productivity Gain</div>
+          <div class="impact-bar"><div class="impact-fill" style="--w:80%"></div></div>
+        </div>
+        <div class="impact-box">
+          <div class="impact-n">&lt;1%</div>
+          <div class="impact-l">Manual Data Error Target</div>
+          <div class="impact-bar"><div class="impact-fill" style="--w:92%"></div></div>
+        </div>
+        <div class="impact-box">
+          <div class="impact-n">100%</div>
+          <div class="impact-l">Workflow Visibility</div>
+          <div class="impact-bar"><div class="impact-fill" style="--w:100%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="out-right">
+      <div style="margin-bottom:16px">
+        <div class="eyebrow anim-2">Delivery Governance</div>
+      </div>
+      <div class="gov-card anim-3">
+        <div class="gov-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+        <div><div class="gov-title">Clear Scope Control</div><div class="gov-desc">Signed scope baseline, change request process, and milestone-level acceptance criteria.</div></div>
+      </div>
+      <div class="gov-card anim-4">
+        <div class="gov-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div>
+        <div><div class="gov-title">Security & Reliability</div><div class="gov-desc">Role-based access, audit logs, backup strategy, and production hardening from day one.</div></div>
+      </div>
+      <div class="gov-card anim-5">
+        <div class="gov-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5A8.38 8.38 0 0 1 12.5 20 8.5 8.5 0 1 1 20 10.5"/><path d="m9 11 2 2 4-4"/></svg></div>
+        <div><div class="gov-title">QA, UAT & Documentation</div><div class="gov-desc">Test plans, user acceptance sign-off, and complete handover docs for internal teams.</div></div>
+      </div>
+      <div class="gov-card anim-6">
+        <div class="gov-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div><div class="gov-title">Adoption & Support</div><div class="gov-desc">Onboarding sessions, SLA-based support, and roadmap reviews to keep momentum after launch.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: BUSINESS IMPACT SNAPSHOT ══ -->
+<div class="slide" id="slide-9">
+  <div class="s-data">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Visual Representation</div>
+      <div class="section-title anim-2">Business Impact<br><span class="blue">Snapshot</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="metrics-grid anim-4">
+      <div class="metric-card"><div class="metric-value">38%</div><div class="metric-label">Avg Throughput Gain</div></div>
+      <div class="metric-card"><div class="metric-value">-54%</div><div class="metric-label">Approval Cycle Time</div></div>
+      <div class="metric-card"><div class="metric-value">82%</div><div class="metric-label">SLA Adherence</div></div>
+      <div class="metric-card"><div class="metric-value">-60%</div><div class="metric-label">Manual Reporting Load</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:12px;position:relative;z-index:2;">
+      <div class="table-card anim-5">
+        <div class="t-head"><div>Metric</div><div>Before</div><div>After</div><div>Delta</div></div>
+        <div class="t-row"><div>Approval SLA Met</div><div>41%</div><div>82%</div><div class="delta-up">+41 pts</div></div>
+        <div class="t-row"><div>Avg Decision Time</div><div>11.4 days</div><div>5.2 days</div><div class="delta-up">-54%</div></div>
+        <div class="t-row"><div>Data Entry Errors</div><div>7.8%</div><div>2.1%</div><div class="delta-up">-73%</div></div>
+        <div class="t-row"><div>Weekly Report Prep</div><div>16 hrs</div><div>6.4 hrs</div><div class="delta-up">-60%</div></div>
+      </div>
+      <div class="mini-chart anim-6">
+        <div class="mini-chart-title">After-State Performance</div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">SLA Adherence</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill good" style="--w:82%"></div></div>
+          <div class="mini-bar-val">82%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Decision Speed</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="--w:54%"></div></div>
+          <div class="mini-bar-val">-54%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Error Reduction</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill good" style="--w:73%"></div></div>
+          <div class="mini-bar-val">-73%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Report Time Saved</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="--w:60%"></div></div>
+          <div class="mini-bar-val">-60%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Throughput Gain</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill good" style="--w:38%"></div></div>
+          <div class="mini-bar-val">+38%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: OPERATIONAL HEALTH ══ -->
+<div class="slide" id="slide-10">
+  <div class="s-data">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Visual Representation</div>
+      <div class="section-title anim-2">Operational Health<br><span class="blue">By Department</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:12px;position:relative;z-index:2;">
+      <div class="table-card anim-4">
+        <div class="t-head"><div>Department</div><div>Cycle Time</div><div>Error Rate</div><div>Status</div></div>
+        <div class="t-row"><div>Finance</div><div>7.1d → 3.9d</div><div>5.1% → 1.8%</div><div class="delta-up">Stabilized</div></div>
+        <div class="t-row"><div>Operations</div><div>9.8d → 4.6d</div><div>6.7% → 2.4%</div><div class="delta-up">Improving</div></div>
+        <div class="t-row"><div>Sales</div><div>5.6d → 3.1d</div><div>4.3% → 1.9%</div><div class="delta-up">Stable</div></div>
+        <div class="t-row"><div>HR</div><div>6.4d → 3.5d</div><div>3.8% → 1.6%</div><div class="delta-up">Stable</div></div>
+      </div>
+      <div class="mini-chart anim-5">
+        <div class="mini-chart-title">Cycle Time Reduction</div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Finance</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill good" style="--w:45%"></div></div>
+          <div class="mini-bar-val">-45%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Operations</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill good" style="--w:53%"></div></div>
+          <div class="mini-bar-val">-53%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">Sales</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="--w:45%"></div></div>
+          <div class="mini-bar-val">-45%</div>
+        </div>
+        <div class="mini-bar-row">
+          <div class="mini-bar-lbl">HR</div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="--w:45%"></div></div>
+          <div class="mini-bar-val">-45%</div>
+        </div>
+      </div>
+    </div>
+    <div class="metrics-grid anim-6">
+      <div class="metric-card"><div class="metric-value">2.3×</div><div class="metric-label">Ticket Closure Speed</div></div>
+      <div class="metric-card"><div class="metric-value">31%</div><div class="metric-label">Team Throughput Lift</div></div>
+      <div class="metric-card"><div class="metric-value">44%</div><div class="metric-label">Payroll Time Saved</div></div>
+      <div class="metric-card"><div class="metric-value">58%</div><div class="metric-label">Stock Mismatch Drop</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: PROJECT — ADITYAM FOUNDATION ══ -->
+<div class="slide" id="slide-11">
+  <div class="s-embeds">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Project Showcase</div>
+      <div class="section-title anim-2">Live Preview<br><span class="blue">Adityam Foundation</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="embed-single anim-4">
+      <div class="embed-chrome">
+        <div class="embed-topbar">
+          <div class="embed-brand-duo">
+            <img class="embed-logo-icon" src="https://www.google.com/s2/favicons?domain=adityamfoundation.org&sz=64" alt="Adityam Foundation icon logo">
+            <div class="embed-logo-lockup">
+              <img src="https://www.google.com/s2/favicons?domain=adityamfoundation.org&sz=64" alt="Adityam Foundation logo">
+              <span>Adityam Foundation</span>
+            </div>
+          </div>
+          <div class="embed-url-bar">
+            <svg class="embed-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            adityamfoundation.org
+          </div>
+          <div class="embed-actions">
+            <span class="embed-tag-badge">NGO</span>
+            <a class="embed-open-btn" href="https://www.adityamfoundation.org/" target="_blank">Open Site ↗</a>
+          </div>
+        </div>
+        <div class="embed-frame-wrap">
+          <iframe class="embed-frame" src="https://www.adityamfoundation.org/" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="embed-footer">
+          Preview may be blocked by the source website.
+          <a href="https://www.adityamfoundation.org/" target="_blank">Open Full Site →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 13: PROJECT — AUREOLE PHARMATECH ══ -->
+<div class="slide" id="slide-12">
+  <div class="s-embeds">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Project Showcase</div>
+      <div class="section-title anim-2">Live Preview<br><span class="blue">Aureole Pharmatech</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="embed-single anim-4">
+      <div class="embed-chrome">
+        <div class="embed-topbar">
+          <div class="embed-brand-duo">
+            <img class="embed-logo-icon" src="https://www.google.com/s2/favicons?domain=aureolepharmatech.com&sz=64" alt="Aureole Pharmatech icon logo">
+            <div class="embed-logo-lockup">
+              <img src="https://www.google.com/s2/favicons?domain=aureolepharmatech.com&sz=64" alt="Aureole Pharmatech logo">
+              <span>Aureole Pharmatech</span>
+            </div>
+          </div>
+          <div class="embed-url-bar">
+            <svg class="embed-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            aureolepharmatech.com
+          </div>
+          <div class="embed-actions">
+            <span class="embed-tag-badge">Pharma</span>
+            <a class="embed-open-btn" href="https://www.aureolepharmatech.com/" target="_blank">Open Site ↗</a>
+          </div>
+        </div>
+        <div class="embed-frame-wrap">
+          <iframe class="embed-frame" src="https://www.aureolepharmatech.com/" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="embed-footer">
+          Preview may be blocked by the source website.
+          <a href="https://www.aureolepharmatech.com/" target="_blank">Open Full Site →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 14: PROJECT — AUREOLE GROUP ══ -->
+<div class="slide" id="slide-13">
+  <div class="s-embeds">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Project Showcase</div>
+      <div class="section-title anim-2">Live Preview<br><span class="blue">Aureole Group</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="embed-single anim-4">
+      <div class="embed-chrome">
+        <div class="embed-topbar">
+          <div class="embed-brand-duo">
+            <img class="embed-logo-icon" src="https://www.google.com/s2/favicons?domain=aureolegroup.com&sz=64" alt="Aureole Group icon logo">
+            <div class="embed-logo-lockup">
+              <img src="https://www.google.com/s2/favicons?domain=aureolegroup.com&sz=64" alt="Aureole Group logo">
+              <span>Aureole Group</span>
+            </div>
+          </div>
+          <div class="embed-url-bar">
+            <svg class="embed-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            aureolegroup.com
+          </div>
+          <div class="embed-actions">
+            <span class="embed-tag-badge">Corporate</span>
+            <a class="embed-open-btn" href="https://www.aureolegroup.com/" target="_blank">Open Site ↗</a>
+          </div>
+        </div>
+        <div class="embed-frame-wrap">
+          <iframe class="embed-frame" src="https://www.aureolegroup.com/" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="embed-footer">
+          Preview may be blocked by the source website.
+          <a href="https://www.aureolegroup.com/" target="_blank">Open Full Site →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 15: PROJECT — SKMRD ══ -->
+<div class="slide" id="slide-14">
+  <div class="s-embeds">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Project Showcase</div>
+      <div class="section-title anim-2">Live Preview<br><span class="blue">SKMRD</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="embed-single anim-4">
+      <div class="embed-chrome">
+        <div class="embed-topbar">
+          <div class="embed-brand-duo">
+            <img class="embed-logo-icon" src="https://www.google.com/s2/favicons?domain=skmrd.com&sz=64" alt="SKMRD icon logo">
+            <div class="embed-logo-lockup">
+              <img src="https://www.google.com/s2/favicons?domain=skmrd.com&sz=64" alt="SKMRD logo">
+              <span>SKMRD</span>
+            </div>
+          </div>
+          <div class="embed-url-bar">
+            <svg class="embed-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            skmrd.com
+          </div>
+          <div class="embed-actions">
+            <span class="embed-tag-badge">Education</span>
+            <a class="embed-open-btn" href="https://www.skmrd.com/" target="_blank">Open Site ↗</a>
+          </div>
+        </div>
+        <div class="embed-frame-wrap">
+          <iframe class="embed-frame" src="https://www.skmrd.com/" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="embed-footer">
+          Preview may be blocked by the source website.
+          <a href="https://www.skmrd.com/" target="_blank">Open Full Site →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: CASE STUDIES ══ -->
+<div class="slide" id="slide-15">
+  <div class="s-cases">
+    <div class="dot-grid-light"></div>
+    <div class="deck-head">
+      <div class="eyebrow anim-1">Selected Work</div>
+      <div class="section-title anim-2">Project Case<br><span class="blue">Studies</span></div>
+      <div class="rule anim-3"></div>
+    </div>
+    <div class="cases-grid anim-4">
+      <div class="case-card">
+        <div class="case-meta">Manufacturing ERP</div>
+        <div class="case-name">Multi-Plant Operations Suite</div>
+        <div class="case-kpis">
+          <span class="case-kpi">42% Faster Dispatch</span>
+          <span class="case-kpi">58% Fewer Mismatches</span>
+        </div>
+        <div class="case-divider"></div>
+        <div class="case-row"><b>Problem:</b> Inventory and dispatch approvals were split across spreadsheets, email threads, and delayed sign-off loops.</div>
+        <div class="case-row"><b>Solution:</b> Implemented one workflow-driven ERP with role approvals, stock validation checkpoints, and dispatch orchestration.</div>
+        <div class="case-row"><b>Outcome:</b> Order-to-dispatch reduced by 42%, while stock mismatch incidents dropped by 58% in quarter one.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-meta">Field Service Mobility</div>
+        <div class="case-name">Technician App + Dispatcher Console</div>
+        <div class="case-kpis">
+          <span class="case-kpi">2.3× Closure Speed</span>
+          <span class="case-kpi">81% SLA Compliance</span>
+        </div>
+        <div class="case-divider"></div>
+        <div class="case-row"><b>Problem:</b> Service teams had no live view of ticket status, field location, and SLA breach risk.</div>
+        <div class="case-row"><b>Solution:</b> Built a geo-tagged technician app with proof capture plus a dispatcher console for queue and escalation control.</div>
+        <div class="case-row"><b>Outcome:</b> Ticket closure improved 2.3×, and SLA compliance increased from 46% to 81%.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: CTA ══ -->
+<div class="slide" id="slide-16">
+  <div class="s-cta">
+    <div class="cta-ring cta-ring-1"></div>
+    <div class="cta-ring cta-ring-2"></div>
+    <div class="cta-ring cta-ring-3"></div>
+    <div class="cta-glow"></div>
+    <div class="cta-inner">
+      <span class="cta-eyebrow anim-1">Let's Build Together</span>
+      <div class="cta-title anim-2">
+        BUILD THE<br>
+        <span class="outline">REMARKABLE</span><br>
+        WITH US.
+      </div>
+      <p class="cta-sub anim-3">Ready to replace your broken tools with software that actually moves the needle? Let's talk.</p>
+      <div class="cta-buttons anim-4">
+        <a href="https://beforth.in" target="_blank" class="btn-primary">
+          Let's Talk
+          <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg></span>
+        </a>
+        <a href="https://beforth.in" target="_blank" class="btn-outline">View Our Work</a>
+      </div>
+      <div class="cta-contact anim-5">
+        <div class="cta-contact-item">
+          <span class="cti-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg></span>
+          <a href="https://beforth.in" target="_blank" rel="noopener noreferrer">beforth.in</a>
+        </div>
+        <div class="cta-contact-item">
+          <span class="cti-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+          <a href="mailto:support@beforth.in">support@beforth.in</a>
+        </div>
+        <div class="cta-contact-item">
+          <span class="cti-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-5.2 7-12a7 7 0 1 0-14 0c0 6.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+          <span>Nashik, Maharashtra, India</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #deck -->
+
+<!-- Controls -->
+<div id="progress"></div>
+<button class="nav-arrow" id="prevBtn" aria-label="Previous slide">&#8592;</button>
+<button class="nav-arrow" id="nextBtn" aria-label="Next slide">&#8594;</button>
+<div id="slideDots"></div>
+<div id="counter">01 / 17</div>
+<div id="keyhint">
+  <span class="key-badge">←</span>
+  <span class="key-badge">→</span>
+  Use arrow keys to navigate
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+let cur = getInitialSlideIndex();
+let transitioning = false;
+
+const progress = document.getElementById('progress');
+const counter  = document.getElementById('counter');
+const prevBtn  = document.getElementById('prevBtn');
+const nextBtn  = document.getElementById('nextBtn');
+const dotsEl   = document.getElementById('slideDots');
+const keyhint  = document.getElementById('keyhint');
+
+function clampSlideIndex(i) { return Math.max(0, Math.min(total - 1, i)); }
+
+function getSlideIndexFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = Number(params.get('slide'));
+  if (!Number.isInteger(raw)) return null;
+  return clampSlideIndex(raw - 1);
+}
+
+function persistSlideState() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('slide', String(cur + 1));
+  window.history.replaceState({}, '', url);
+  try { localStorage.setItem('beforthPitchSlide', String(cur)); } catch(e){}
+}
+
+function getInitialSlideIndex() {
+  const q = getSlideIndexFromUrl();
+  if (q !== null) return q;
+  try {
+    const s = Number(localStorage.getItem('beforthPitchSlide'));
+    if (Number.isInteger(s)) return clampSlideIndex(s);
+  } catch(e){}
+  return 0;
+}
+
+function setSlideImmediate(index) {
+  const t = clampSlideIndex(index);
+  slides.forEach(s => s.classList.remove('active','enter-right','enter-left','exit-left','exit-right'));
+  slides[t].classList.add('active');
+  cur = t;
+}
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'sdot' + (i === cur ? ' on' : '');
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function updateUI() {
+  const n = String(cur + 1).padStart(2, '0');
+  counter.textContent = `${n} / ${String(total).padStart(2, '0')}`;
+  progress.style.width = ((cur + 1) / total * 100) + '%';
+  dotsEl.querySelectorAll('.sdot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  persistSlideState();
+}
+
+function goTo(next, dir) {
+  if (transitioning || next === cur) return;
+  transitioning = true;
+  const direction = dir !== undefined ? dir : (next > cur ? 1 : -1);
+  const oldSlide = slides[cur];
+  const newSlide = slides[next];
+  oldSlide.classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+  oldSlide.classList.remove('active');
+  newSlide.classList.add(direction > 0 ? 'enter-right' : 'enter-left');
+  newSlide.classList.add('active');
+  cur = next;
+  updateUI();
+  setTimeout(() => {
+    oldSlide.classList.remove('exit-left','exit-right','active');
+    newSlide.classList.remove('enter-right','enter-left');
+    transitioning = false;
+  }, 600);
+}
+
+prevBtn.addEventListener('click', () => { if (cur > 0) goTo(cur - 1, -1); });
+nextBtn.addEventListener('click', () => { if (cur < total - 1) goTo(cur + 1, 1); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (cur < total - 1) goTo(cur + 1, 1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { if (cur > 0) goTo(cur - 1, -1); }
+});
+
+window.addEventListener('popstate', () => {
+  const q = getSlideIndexFromUrl();
+  if (q === null || q === cur) return;
+  setSlideImmediate(q);
+  updateUI();
+});
+
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) {
+    if (dx < 0 && cur < total - 1) goTo(cur + 1, 1);
+    if (dx > 0 && cur > 0) goTo(cur - 1, -1);
+  }
+}, { passive: true });
+
+setTimeout(() => keyhint.classList.add('hidden'), 5000);
+
+setSlideImmediate(cur);
+updateUI();
+</script>
+</body>
+</html>
